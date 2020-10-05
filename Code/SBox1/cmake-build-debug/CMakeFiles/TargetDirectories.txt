@@ -1,0 +1,3 @@
+D:/Diploma/Code/SBox1/cmake-build-debug/CMakeFiles/SBox1.dir
+D:/Diploma/Code/SBox1/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/Diploma/Code/SBox1/cmake-build-debug/CMakeFiles/rebuild_cache.dir

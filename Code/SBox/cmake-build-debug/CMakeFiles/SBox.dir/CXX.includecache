@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/Diploma/Code/SBox/main.cpp
+cstdio
+-
+cstdlib
+-
+cstring
+-
+clocale
+-
+vector
+D:/Diploma/Code/SBox/vector
+sbox.h
+D:/Diploma/Code/SBox/sbox.h
+
+D:/Diploma/Code/SBox/sbox.h
+vector
+-
+malloc.h
+D:/Diploma/Code/SBox/malloc.h
+stdio.h
+D:/Diploma/Code/SBox/stdio.h
+string.h
+D:/Diploma/Code/SBox/string.h
+stdlib.h
+D:/Diploma/Code/SBox/stdlib.h
+
