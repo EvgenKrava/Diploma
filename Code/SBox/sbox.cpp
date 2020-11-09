@@ -1,20 +1,22 @@
 //
 // Created by Yevhenii on 10/4/2020.
 //
-
-#include <algorithm>
+#include <chrono>
+#include <random>
 #include "sbox.h"
 
+int *generate_descendant(int *sbox, int size, int count);
+
 /**
- * @param func decimal numbers
+ * @param decimalFunc decimal numbers
  * @param size function size
  * @param count
  * @return count functions in binary type
  */
-int *getFunctions(int *func, int size, int count) {
+int *getFunctions(int *decimalFunc, int size, int count) {
     int *result = (int *) malloc(size * count * sizeof(int));
     for (int i = 0; i < size; ++i) {
-        int *bin = int_to_binary(func[i], count);
+        int *bin = int_to_binary(decimalFunc[i], count);
         for (int j = 0; j < count; ++j) {
             result[j * size + i] = bin[count - j - 1];
         }
@@ -72,7 +74,7 @@ int KP(const int *func, int size, int alpha) {
 
 int criterion_of_degree(int *func, int size, int k) {
     int *gf = GF(size);
-    for (int i = 0; i < myPow(2, size); ++i) {
+    for (int i = 0; i < pow(2, size); ++i) {
         int hw = Hamming_Weight(gf + i * size, size);
         if (hw >= 1 && hw <= k) {
             int k = KP(func, size, i);
@@ -91,17 +93,17 @@ int *reverse(int *f, int func_size) {
     for (int i = 0; i < func_size; ++i) {
         tmp[func_size - i - 1] = f[i];
     }
-    free(f);
     return tmp;
 }
 
-char *to_ANF(const int *func, int size) {
+char *to_ANF(int *func, int size) {
+    int *f = reverse(func, size);
     int n = log2int(size);
     int length = 0;
     int *table = GF(n);
     int *matrix = (int *) malloc(sizeof(int) * size * size);
     for (int i = 0; i < size; ++i) {
-        *(matrix + i) = *(func + size - 1 - i);
+        *(matrix + i) = *(f + size - 1 - i);
     }
     for (int i = 1; i < size; ++i) {
         for (int j = 0; j < size - i; ++j) {
@@ -120,7 +122,6 @@ char *to_ANF(const int *func, int size) {
             length++;
         }
     }
-
     char *result = (char *) malloc(sizeof(char) * length - 1);
     sprintf(result, "");
     for (int i = 0; i < size; ++i) {
@@ -170,17 +171,18 @@ int *to_binary(char *ANF, int size) {
     return arr;
 }
 
-int *read_from_file(char *file_name, int size) {
+int *read_from_file(const char *file_name, int size) {
     FILE *fp = fopen(file_name, "r");
-    if (fp == NULL) {
+    if (fp == nullptr) {
         perror("Error while opening the file.\n");
         exit(EXIT_FAILURE);
     }
-    int *res = (int *) malloc(sizeof(*fp));
+    int *res = (int *) malloc(sizeof(int) * size);
     int ch;
     int i = 0;
-    while ((ch = fgetc(fp)) != EOF)
+    while ((ch = fgetc(fp)) != EOF && i < size) {
         *(res + i++) = ch - 48;
+    }
     fclose(fp);
     return res;
 }
@@ -213,14 +215,6 @@ int maximum(int *arr, int size) {
     return m;
 }
 
-int myPow(int num, int pow) {
-    int res = 1;
-    for (int i = 0; i < pow; ++i) {
-        res *= num;
-    }
-    return res;
-}
-
 int isEqual(int *f1, int *f2, int size) {
     int counter = 0;
     for (int i = 0; i < size; ++i) {
@@ -235,21 +229,21 @@ int isEqual(int *f1, int *f2, int size) {
 int *ptt(int *f, int size) {
     int *res = (int *) malloc(sizeof(int) * size);
     for (int i = 0; i < size; ++i) {
-        res[i] = myPow(-1, f[i]);
+        res[i] = pow(-1, f[i]);
     }
     return res;
 }
 
 int log2int(int n) {
     for (int i = 0; i < n; ++i) {
-        if (myPow(2, i) == n) return i;
+        if (pow(2, i) == n) return i;
     }
     return -1;
 }
 
 int *getTable(int n) {
-    int *arr = (int *) malloc(n * myPow(2, n) * sizeof(int));
-    for (int i = 0; i < myPow(2, n); ++i) {
+    int *arr = (int *) malloc(n * pow(2, n) * sizeof(int));
+    for (int i = 0; i < pow(2, n); ++i) {
         for (int j = n - 1; j >= 0; --j) {
             *(arr + i * n + j) = (i >> (n - j - 1)) & 1u;
         }
@@ -258,8 +252,8 @@ int *getTable(int n) {
 }
 
 int *GF(int n) {
-    int *arr = (int *) malloc(n * myPow(2, n) * sizeof(int));
-    for (int i = 0; i < myPow(2, n); ++i) {
+    int *arr = (int *) malloc(n * pow(2, n) * sizeof(int));
+    for (int i = 0; i < pow(2, n); ++i) {
         for (int j = n - 1; j >= 0; --j) {
             *(arr + i * n + j) = (i >> (n - j - 1)) & 1u;
         }
@@ -268,7 +262,7 @@ int *GF(int n) {
 }
 
 void printTableUsingArgs(int *args, int n) {
-    int size = myPow(2, n);
+    int size = pow(2, n);
     int *arr = GF(n);
     for (int i = n; i > 0; --i) {
         printf("x%d ", i);
@@ -319,7 +313,10 @@ int deg(char *anf) {
 }
 
 int NL(int *f, int size) {
-    return (size - abs_max(WHT(f, size), size)) / 2;
+    int *wht = WHT(f, size);
+    int res = (size - abs_max(wht, size)) / 2;
+    free(wht);
+    return res;
 }
 
 //Walsh Hadamard Transform
@@ -338,7 +335,7 @@ int *WHT(int *func, int func_size) {
             for (int k = 0; k < n; ++k) {
                 r += mod(w[k] * t[j * n + k], 2);
             }
-            res += myPow(-1, mod(func[j] + r, 2));
+            res += pow(-1, mod(func[j] + r, 2));
         }
         result[i] = res;
     }
@@ -348,7 +345,22 @@ int *WHT(int *func, int func_size) {
 }
 
 int mod(int num, int mod) {
-    return num % 2 < 0 ? num + mod : num;
+    return num % 2 < 0 ? (num % 2) + mod : num % 2;
+}
+
+void balance(int *func, int size) {
+    int h = Hamming_Weight(func, size);
+    int *wht = WHT(func, size);
+    for (int i = 0; i < size; ++i) {
+        if ((!wht[i] || abs(wht[i]) == 2) && h > size / 2 && func[i] == 1) {
+            func[i] = 0;
+        } else if ((!wht[i] || abs(wht[i]) == 2) && h < size / 2 && func[i] == 0) {
+            func[i] = 1;
+        }
+        h = Hamming_Weight(func, size);
+        if (h == size / 2) break;
+    }
+    free(wht);
 }
 
 int *AC(int *func, int size) {
@@ -356,7 +368,7 @@ int *AC(int *func, int size) {
     int *fs = ptt(func, size);
     fs = reverse(fs, size);
     int *ac = (int *) malloc(size * sizeof(int));
-    ac[0] = myPow(2, n);
+    ac[0] = pow(2, n);
     for (int a = 1; a < size; ++a) {
         int result = 0;
         for (int i = 0; i < size; ++i) {
@@ -381,18 +393,38 @@ int abs_max(int *arr, int size) {
 }
 
 int isBalanced(int *func, int size) {
-    return Hamming_Weight(func, size) == myPow(2, (log2int(size) - 1));
+    return Hamming_Weight(func, size) == pow(2, (log2int(size) - 1));
+}
+
+int pow(int a, int b) {
+    int res = 1;
+    for (int i = 0; i < b; ++i) {
+        res *= a;
+    }
+    return res;
 }
 
 int isBentFunction(int *func, int size) {
-    if (deg(to_ANF(func, size)) > size / 2) return 0;
-    int hw = Hamming_Weight(func, size);
-    int n = myPow(2, size - 1) - myPow(2, size / 2 - 1);
-    if (hw != (myPow(2, size - 1) + myPow(2, size / 2 - 1))
-        &&
-        hw != n)
+    int n = log2int(size);
+    if (n % 2 != 0) {
+        return -1;
+    }
+    char *anf = to_ANF(func, size);
+    //printf("%s\n", anf);
+    if (deg(anf) > (size / 2)) {
+        free(anf);
         return 0;
-    if (NL(func, size) != n) return 0;
+    }
+    free(anf);
+    int hw = Hamming_Weight(func, size);
+    int hw1 = pow(2, n - 1) + pow(2, n / 2 - 1);
+    int hw2 = pow(2, n - 1) - pow(2, n / 2 - 1);
+    if (hw != hw1 && hw != hw2) {
+        return 0;
+    }
+    if (NL(func, size) != hw2) {
+        return 0;
+    }
     return 1;
 }
 
@@ -465,52 +497,223 @@ int *to_arr(std::vector<int> vector) {
     return arr;
 }
 
-int *up(int *func, int size) {
-    std::vector<int> w_plus;
-    std::vector<int> w_minus;
-    int *wht = WHT(func, size);
-    int wht_max = abs_max(wht, size);
-    for (int i = 0; i < size; ++i) {
-        if (wht[i] > 0 && (abs(wht[i]) == wht_max || abs(wht[i]) == wht_max - 2)) {
-            w_plus.push_back(i);
-        } else if (wht[i] < 0 && (abs(wht[i]) == wht_max || abs(wht[i]) == wht_max - 2)) {
-            w_minus.push_back(i);
+int autocorrelation(int *func, int size) {
+    int max = 0;
+    int *ac = AC(func, size);
+    for (int i = 1; i < size; ++i) {
+        if (ac[i] > max) {
+            max = ac[i];
         }
     }
-    if (!w_minus.empty()) {
-        for (int i = 0; i < size; ++i) {
-            if ((std::find(w_plus.begin(), w_plus.end(), i) == w_plus.end()) &&
-                (std::find(w_minus.begin(), w_minus.end(), i) != w_minus.end())) {
-                func[i] = (func[i] + 1) % 2;
-            }
-        }
-    }
-    return func;
+    return max;
 }
 
-int *down(int *func, int size) {
-    if (!isBalanced(func, size)){
-
-    }
+int gradient_up(int *func, int size) {
     std::vector<int> w_plus;
     std::vector<int> w_minus;
     std::vector<int> is;
+    w_minus.clear();
+    w_plus.clear();
+    is.clear();
     int *wht = WHT(func, size);
     int wht_max = abs_max(wht, size);
     for (int i = 0; i < size; ++i) {
         if (wht[i] > 0 && (abs(wht[i]) == wht_max || abs(wht[i]) == wht_max - 2)) {
             w_plus.push_back(i);
-        } else if (wht[i] < 0 && (abs(wht[i]) == wht_max || abs(wht[i]) == wht_max - 2)) {
+        }
+        if (wht[i] < 0 && (abs(wht[i]) == wht_max || abs(wht[i]) == wht_max - 2)) {
             w_minus.push_back(i);
         }
     }
-    if (!w_plus.empty()) {
-        for (int i = 0; i < size; ++i) {
-            if ((std::find(w_plus.begin(), w_plus.end(), i) != w_plus.end()) &&
-                (std::find(w_minus.begin(), w_minus.end(), i) == w_minus.end())) {
-                func[i] = (func[i] + 1) % 2;
-            }
+    for (int i = 0; i < size; ++i) {
+        if ((std::find(w_plus.begin(), w_plus.end(), i) == w_plus.end())
+            &&
+            (std::find(w_minus.begin(), w_minus.end(), i) != w_minus.end())) {
+            is.push_back(i);
         }
     }
-    return func;
+    for (int i : is) {
+        func[i] = func[i] ? 0 : 1;
+    }
+    return 0;
+}
+
+int gradient_descent(int *func, int size) {
+    std::vector<int> w_plus;
+    std::vector<int> w_minus;
+    std::vector<int> is;
+    w_minus.clear();
+    w_plus.clear();
+    is.clear();
+    int *wht = WHT(func, size);
+    int wht_max = abs_max(wht, size);
+    for (int i = 0; i < size; ++i) {
+        if (wht[i] > 0 && (abs(wht[i]) == wht_max || abs(wht[i]) == wht_max - 2)) {
+            w_plus.push_back(i);
+        }
+        if (wht[i] < 0 && (abs(wht[i]) == wht_max || abs(wht[i]) == wht_max - 2)) {
+            w_minus.push_back(i);
+        }
+    }
+    for (int i = 0; i < size; ++i) {
+        if ((std::find(w_plus.begin(), w_plus.end(), i) != w_plus.end())
+            ||
+            (std::find(w_minus.begin(), w_minus.end(), i) != w_minus.end())) {
+            is.push_back(i);
+        }
+    }
+    for (int i : is) {
+        func[i] = func[i] ? 0 : 1;
+    }
+    free(wht);
+    return 0;
+}
+
+int N(int *func, int n) {
+    int *wh = WHT(func, pow(2, n));
+    int max = abs_max(wh, pow(2, n));
+    free(wh);
+    return (pow(2, n) - max) / 2;
+}
+
+int isBalancedSBox(int *sbox, int size, int count) {
+    int result = 0;
+    for (int i = 0; i < count; ++i) {
+        result += isBalanced(sbox + i * size, size);
+    }
+    return result == count;
+}
+
+
+int SboxNL(int *sbox, int size, int count) {
+    int min = NL(sbox, size);
+    for (int i = 0; i < count; ++i) {
+        int nl = NL(sbox + size * i, size);
+        if (nl < min) {
+            min = nl;
+        }
+    }
+    return min;
+}
+
+int SBoxAC(int *sbox, int size, int count) {
+    int max = autocorrelation(sbox, size);
+    for (int i = 1; i < count; ++i) {
+        int ac = autocorrelation(sbox + size * i, size);
+        if (ac > max) {
+            max = ac;
+        }
+    }
+    return max;
+}
+
+int *simulated_annealing(int *sbox, int size, int count, int requiredNL, int requiredAC) {
+    double d;
+    int MIL = 100;
+    double a = 0.7;
+    double T = 100000;
+    std::mt19937 engine; // mt19937 как один из вариантов
+    int *S = (int *) malloc(size * count * sizeof(int));
+    for (int i = 0; i < size * count; ++i) {
+        S[i] = sbox[i];
+    }
+    while ((SboxNL(S, size, count) < requiredNL || SBoxAC(S, size, count) > requiredAC)) {
+        for (int i = 0; i < MIL; ++i) {
+            int *Y = generate_descendant(S, size, count);
+            int costY = cost_4_11(Y, size, count);
+            int costS = cost_4_11(sbox, size, count);
+            d = costY - costS;
+            //printf("%d  %d\n", costS, costY);
+            if (d < 0) {
+                //printf("change\n");
+                for (int j = 0; j < size * count; ++j) {
+                    S[j] = Y[j];
+                }
+            } else {
+                double u = (double) engine() / engine.max();
+                //printf("%f\n", u);
+                double t = (double) d / T;
+                if (u < exp(-t)) {
+                    for (int j = 0; j < size * count; ++j) {
+                        S[j] = Y[j];
+                    }
+                }
+            }
+            T = T * a;
+            free(Y);
+        }
+        printf("NL = %d\n", SboxNL(S, size, count));
+        printf("AC = %d\n", SBoxAC(S, size, count));
+    }
+    return S;
+}
+
+int *generate_descendant(int *sbox, int size, int count) {
+    int *Y = (int *) malloc(sizeof(int) * size * count);
+    std::mt19937 engine;
+    static int a = 0;
+    int range = engine() % size;
+    range = range >= 0 ? range : range + size;
+    a = (a + 1) % size;
+    int b;
+    do {
+        b = (a + range) % size;
+    } while (b == a);
+    //printf("%d %d\n", a, b);
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < count; ++j) {
+            if (i == a) {
+                *(Y + j * size + i) = *(sbox + j * size + b);
+            } else *(Y + j * size + i) = *(sbox + j * size + (i == b ? a : i));
+        }
+    }
+    return Y;
+}
+
+int *generate_sbox(int n, int m) {
+    int size = pow(2, n);
+    int *dec = (int *) malloc(sizeof(int) * size);
+    srand(time(NULL));
+    for (int i = 0; i < size;) {
+        dec[i] = rand() % pow(2, m);
+        int contains = 0;
+        for (int j = 0; j < i; ++j) {
+            if (dec[i] == dec[j]) {
+                contains = 1;
+                break;
+            }
+        }
+        if (!contains) {
+            i++;
+        }
+    }
+    int *sb = getFunctions(dec, size, m);
+    free(dec);
+    return sb;
+}
+
+int *generate_function(int size) {
+    int *f = (int *) malloc(sizeof(int) * size);
+    srand(time(nullptr));
+    for (int i = 0; i < size; ++i) {
+        f[i] = rand() % 2;
+    }
+    return f;
+}
+
+int cost_4_11(int *sbox, int size, int count) {
+    int res = 0;
+    int R = 1;
+    for (int i = 0; i < count; ++i) {
+        int re = 0;
+        int *wh = WHT((sbox + size * count), size);
+        for (int j = 0; j < size; ++j) {
+            int n = log2int(size) / 2;
+            int k = abs(abs(wh[j]) - pow(2, n));
+            re += pow(k, R);
+        }
+        free(wh);
+        res += re;
+    }
+    return res;
 }

@@ -1,14 +1,16 @@
-#include <cstdlib>
 #include <clocale>
+#include <iostream>
 #include "sbox.h"
 
+
+void printFunctionParams(int *func, int size);
 
 //GF(2^n)
 int main(int args, char **argv) {
     setlocale(LC_ALL, "Rus");
-    int func_num = 1;
+    /*int func_num = 1;
     int n = 3;
-    int size = myPow(2, n);
+    int size = pow(2, n);
     int df[] = {7, 2, 1, 3, 6, 5, 0, 4};
     printf("Задание 1.\n"
            "Задан произвольный S-бокс 3x3:\n");
@@ -60,31 +62,68 @@ int main(int args, char **argv) {
     printf("NL(f) = %d\n", NL(f, 16));
     printf("2) Методом градиентного спуска, если это возможно, понизить NL функции на 1.\n");
 
-    printf("3) Рассчитать новые коэффициенты Уолша-Адамара, рассчитать новую NL.\n");
-    printf("Задание 3.\n"
-           "Построить S-бокс алгебраическим методом.\n");
-    IS(f, 16);
-    up(f, 16);
+    printf("3) Рассчитать новые коэффициенты Уолша-Адамара, рассчитать новую NL.\n");*/
+    /*int size = 16;
+    int *f = read_from_file("D:\\Diploma\\Code\\SBox\\test.txt", size);
+    for (int i = 0; i < size; ++i) {
+        printf("%d ", f[i]);
+    }
+    int *fu = generate_function(size);
+    printf("\nf(bend) = ");
+    for (int k = 0; k < size; ++k) {
+        printf("%d ", fu[k]);
+    }
+    printf("\nNL = %d", NL(fu, size));
+    gradient_down(fu, size);
     printf("\nf = ");
-    for (int i : f) {
-        printf("%d ", i);
+    for (int k = 0; k < size; ++k) {
+        printf("%d ", fu[k]);
     }
-    printf("\nNL(f) = %d\n", NL(f, 16));
-    IS(f, 16);
-    down(f, 16);
-    printf("\nf = ");
-    for (int i : f) {
-        printf("%d ", i);
+    printf("\nNL = %d", NL(fu, size));*/
+    int n = 8;
+    int size = pow(2, n);
+    int *sbox = generate_sbox(n, 8);
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < size; ++j) {
+            printf("%d ", *(sbox + i * size + j));
+        }
+        printf("\n");
     }
-    printf("\nNL(f) = %d\n", NL(f, 16));
-    wht2 = WHT(f, 16);
-    for (int i = 0; i < 16; ++i) {
-        printf("W(%d) = %d\n", i, wht2[i]);
+    printf("cost = %d\n", cost_4_11(sbox, size, 8));
+    printf("NL = %d\n", SboxNL(sbox, size, 8));
+    printf("AC = %d\n", SBoxAC(sbox, size, 8));
+    printf("Balanced: %s\n", isBalancedSBox(sbox, size, 8) ? "Yes" : "No");
+    printf("\n");
+    auto start = std::chrono::high_resolution_clock::now();
+    sbox = simulated_annealing(sbox, size, 8, 104, 60);
+    auto end = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < size; ++j) {
+            printf("%d ", *(sbox + i * size + j));
+        }
+        printf("\n");
     }
+    printf("cost = %d\n", cost_4_11(sbox, size, 8));
+    printf("NL = %d\n", SboxNL(sbox, size, 8));
+    printf("AC = %d\n", SBoxAC(sbox, size, 8));
+    printf("Balanced: %s\n", isBalancedSBox(sbox, size, 8) ? "Yes" : "No");
+    printf("%d microseconds\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
     return 0;
 }
 
-
-
-
-
+void printFunctionParams(int *func, int size) {
+    printf("Функция: ");
+    for (int i = 0; i < size; ++i) {
+        printf("%d", func[i]);
+    }
+    printf("\n");
+    char *anf = to_ANF(func, size);
+    printf("АНФ сгенерированной функции: %s\n", anf);
+    printf("Сбалансированность: %s\n", isBalanced(func, size) ? "Да" : "Нет");
+    printf("Нелинейность: %d\n", NL(func, size));
+    printf("Автокорреляция: %d\n", autocorrelation(func, size));
+    printf("Критерий распространения: %d\n", criterion_of_degree(func, size, 1));
+    printf("Алгебраическая степень: %d\n", deg(anf));
+    printf("Бент: %s\n", isBentFunction(func, size) ? "Да" : "Нет");
+    free(anf);
+}
