@@ -1,9 +1,21 @@
-#include <clocale>
+#include <locale>
 #include <iostream>
+#include <pthread.h>
+#include <map>
+#include <windows.h>
+#include "fstream"
 #include "sbox.h"
 
-
 void printFunctionParams(int *func, int size);
+
+int read_settings_from_file(const char *file_name, parameters *params);
+
+void save_result_to_file(int *sbox, int size, int count, struct parameters params, int time_in_microseconds,
+                         const char *file_name);
+
+void fill_parameters_default_values(parameters *pParameters);
+
+void save_statistics_in_file(std::vector<pair> element, const char *file_name);
 
 //GF(2^n)
 int main(int args, char **argv) {
@@ -80,36 +92,203 @@ int main(int args, char **argv) {
         printf("%d ", fu[k]);
     }
     printf("\nNL = %d", NL(fu, size));*/
-    int n = 8;
+    static parameters params;
+    std::string filename = "settings.txt";
+    fill_parameters_default_values(&params);//встановлюємо параметри за замовчуванням
+    //Зчитування параметрів з файлу
+    if (read_settings_from_file(filename.c_str(), &params)) {
+        std::cerr
+                << "Can't open settings.txt file!" << std::endl
+                << "Use default parameters!" << std::endl;
+    } else {
+        std::cout << "Parameters read successfully!" << std::endl;
+    }
+    std::cout << "Генерацiя SBox (кiлькiсть потокiв " << params.thread_count << ")" << std::endl;
+    int n = params.N;
     int size = pow(2, n);
-    int *sbox = generate_sbox(n, 8);
-    for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < size; ++j) {
-            printf("%d ", *(sbox + i * size + j));
-        }
-        printf("\n");
+    std::cout << "Вхiднi параметри: " << std::endl
+              << "Ожидаемая нелинейность: " << params.requiredNL << std::endl
+              << "Ожидаемая автокорреляция: " << params.requiredAC << std::endl
+              << "Начальная температура: " << params.initial_temperature << std::endl
+              << "Количество внутренних циклов: " << params.MIL << std::endl
+              << "Количество внешних циклов: " << params.MUL << std::endl
+              << "Коэффициент затухания: " << params.solidification_coefficient << std::endl
+              << "X1: " << params.X1 << " X2: " << params.X2 << " R1: " << params.R1 << " R2: " << params.R2
+              << std::endl;
+    int *sbox = generate_sbox(n, n);//генерація випадкового s-box
+    int *result = (int *) malloc(sizeof(int) * size * n);
+    printf("   NL    AC      COST      TEMP     DELTA\n");
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> start;
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> end;
+    pthread_t ptids[params.thread_count];
+    start = std::chrono::high_resolution_clock::now();//Початок вимірювання часу
+    pthread_simulating_annealing_args pthreadSimulatingAnnealingArgs{
+            sbox,
+            size,
+            n,
+            &params,
+            result,
+    };
+    for (int i = 0; i < params.thread_count; ++i) {
+        pthread_create(ptids + i, nullptr, &pthread_simulating_annealing, &pthreadSimulatingAnnealingArgs);
     }
-    printf("cost = %d\n", cost_4_11(sbox, size, 8));
-    printf("NL = %d\n", SboxNL(sbox, size, 8));
-    printf("AC = %d\n", SBoxAC(sbox, size, 8));
-    printf("Balanced: %s\n", isBalancedSBox(sbox, size, 8) ? "Yes" : "No");
-    printf("\n");
-    auto start = std::chrono::high_resolution_clock::now();
-    sbox = simulated_annealing(sbox, size, 8, 104, 60);
-    auto end = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < size; ++j) {
-            printf("%d ", *(sbox + i * size + j));
-        }
-        printf("\n");
+    for (int i = 0; i < params.thread_count; ++i) {
+        pthread_join(ptids[i], nullptr);
     }
-    printf("cost = %d\n", cost_4_11(sbox, size, 8));
-    printf("NL = %d\n", SboxNL(sbox, size, 8));
-    printf("AC = %d\n", SBoxAC(sbox, size, 8));
-    printf("Balanced: %s\n", isBalancedSBox(sbox, size, 8) ? "Yes" : "No");
-    printf("%d microseconds\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+    end = std::chrono::high_resolution_clock::now();//Кінець вимірювання часу
+    result = pthreadSimulatingAnnealingArgs.result;
+
+    int *dec = SBoxBinaryToDecimal(result, size, n);//бінарне представлення у десяткове
+    for (int i = 0; i < size; ++i) {
+        printf("%02X ", dec[i]);
+    }
+    save_result_to_file(result, size, n, params,
+                        std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(),
+                        "result.txt");
+    printf("Результат збережено у файл \"result.txt\" \n Час роботи алгоритму: %d seconds\n",
+           std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000);
+    save_statistics_in_file(params.pairs, "statistics.csv");
     return 0;
+    /*for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < size; ++j) {
+            printf("%d ", *(sbox + i * size + j));
+        }
+        printf("\n");
+    }*/
+
+    /*int sbox[] = {0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1};
+    using namespace std;
+    cout << SBoxNL(sbox, 8, 3) << endl;
+    cout << LAT(sbox, 8, 3) << endl;*/
+
 }
+
+void save_statistics_in_file(std::vector<pair> vector, const char *file_name) {
+    FILE *f = fopen(file_name, "w");
+    if (f != nullptr) {
+        fprintf(f, "NL, AC, COUNT");
+        for (auto it = vector.begin(); it != vector.end(); it++) {
+            int ac = it->AC;
+            int nl = it->NL;
+            it->count = std::count_if(vector.begin(), vector.end(),
+                                      [nl, ac](pair element) {
+                                          return element.AC == ac &&
+                                                 element.NL == nl;
+
+                                      });
+        }
+        for (int i = 0; i < vector.size(); ++i) {
+            for (int j = i + 1; j < vector.size(); ++j) {
+                if (vector[i].NL == vector[j].NL && vector[i].AC == vector[j].AC) {
+                    vector.erase(vector.begin() + j);
+                }
+            }
+        }
+        for (auto it = vector.begin(); it != vector.end(); it++) {
+            fprintf(f, "%d, %d, %d\n", it->NL, it->AC, it->count);
+        }
+    }
+    fclose(f);
+}
+
+
+void fill_parameters_default_values(parameters *pParameters) {
+    pParameters->N = 8;
+    pParameters->MUL = 100;
+    pParameters->R2 = 2;
+    pParameters->R1 = 2;
+    pParameters->X1 = 16;
+    pParameters->X2 = 16;
+    pParameters->solidification_coefficient = 0.999;
+    pParameters->initial_temperature = 1000000;
+    pParameters->requiredAC = 64;
+    pParameters->requiredNL = 104;
+    pParameters->MIL = 100;
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    int numCPU = sysinfo.dwNumberOfProcessors;
+    pParameters->thread_count = numCPU - 1;
+    pParameters->ready = 0;
+}
+
+void save_result_to_file(int *sbox, int size, int count, struct parameters params, int time_in_microseconds,
+                         const char *file_name) {
+    int *dec = SBoxBinaryToDecimal(sbox, size, count);
+    FILE *f = fopen(file_name, "a");
+    if (f != nullptr) {
+        for (int i = 0; i < size; ++i) {
+            fprintf(f, "%02X ", dec[i]);
+        }
+        fprintf(f, "\nНелiнiйнiсть: %d", pow(2, count - 1) - LAT(sbox, size, count));
+        fprintf(f, "\nАвтокорреляцiя: %d", SBoxAC(sbox, size, count));
+        fprintf(f, "\nЧас виконання: %dc", time_in_microseconds / 1000000);
+        fprintf(f, "\nX1: %d X2: %d R1: %d R2: %d\n", params.X1, params.X2, params.R1, params.R2);
+    }
+    fclose(f);
+}
+
+int read_settings_from_file(const char *file_name, struct parameters *params) {
+    std::string line;
+    std::ifstream in(file_name); // окрываем файл для чтения
+    if (in.is_open()) {
+        while (getline(in, line)) {
+            int index = line.find(": ");
+            if (line.find("нелинейность") != std::string::npos) {
+                int i = atoi(line.substr(index + 1, line.size() - index).c_str());
+                params->requiredNL = i > 0 ? i : 100;
+            }
+            if (line.find("автокорреляция") != std::string::npos) {
+                int i = atoi(line.substr(index + 1, line.size() - index).c_str());
+                params->requiredAC = i > 0 ? i : 70;
+            }
+            if (line.find("температура") != std::string::npos) {
+                double i = atof(line.substr(index + 1, line.size() - index).c_str());
+                params->initial_temperature = i > 1000 ? i : 5000;
+            }
+            if (line.find("внутренних циклов") != std::string::npos) {
+                int i = atoi(line.substr(index + 1, line.size() - index).c_str());
+                params->MIL = i > 0 ? i : 100;
+            }
+            if (line.find("внешних циклов") != std::string::npos) {
+                int i = atoi(line.substr(index + 1, line.size() - index).c_str());
+                params->MUL = i > 0 ? i : 100;
+            }
+            if (line.find("затухания") != std::string::npos) {
+                double f = atof(line.substr(index + 1, line.size() - index).c_str());;
+                params->solidification_coefficient = f > 0 && f < 1 ? f : 0.5;
+            }
+            if (line.find("X1") != std::string::npos) {
+                int f = atoi(line.substr(index + 1, line.size() - index).c_str());;
+                params->X1 = f > 0 ? f : 2;
+            }
+            if (line.find("X2") != std::string::npos) {
+                int f = atoi(line.substr(index + 1, line.size() - index).c_str());;
+                params->X2 = f > 0 ? f : 2;
+            }
+            if (line.find("R1") != std::string::npos) {
+                int f = atoi(line.substr(index + 1, line.size() - index).c_str());;
+                params->R1 = f > 0 ? f : 2;
+            }
+            if (line.find("R2") != std::string::npos) {
+                int f = atoi(line.substr(index + 1, line.size() - index).c_str());;
+                params->R2 = f > 0 ? f : 2;
+            }
+            if (line.find("N:") != std::string::npos) {
+                int f = atoi(line.substr(index + 1, line.size() - index).c_str());;
+                params->N = f > 0 ? f : 8;
+            }
+            if (line.find("thread count") != std::string::npos) {
+                int i = atoi(line.substr(index + 1, line.size() - index).c_str());;
+                params->thread_count = i > 0 ? i : 1;
+            }
+        }
+        in.close();
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
 
 void printFunctionParams(int *func, int size) {
     printf("Функция: ");

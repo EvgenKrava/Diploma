@@ -1,4 +1,4 @@
-C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5419.20\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -G "CodeBlocks - MinGW Makefiles" D:\Diploma\Code\SBox
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -G "CodeBlocks - MinGW Makefiles" D:\Diploma\Code\SBox
 -- Configuring done
 -- Generating done
 -- Build files have been written to: D:/Diploma/Code/SBox/cmake-build-debug-coverage

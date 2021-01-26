@@ -2,3 +2,67 @@ The C compiler identification could not be found in "D:/Diploma/Code/SBox/cmake-
 
 The CXX compiler identification could not be found in "D:/Diploma/Code/SBox/cmake-build-debug-coverage/CMakeFiles/3.17.3/CompilerIdCXX/CMakeCXXCompilerId.gcno"
 
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: D:/Diploma/Code/SBox/cmake-build-debug-coverage/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_1241e/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_1241e.dir\build.make CMakeFiles/cmTC_1241e.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Diploma/Code/SBox/cmake-build-debug-coverage/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1241e.dir/src.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   --coverage -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles\cmTC_1241e.dir\src.c.obj   -c D:\Diploma\Code\SBox\cmake-build-debug-coverage\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_1241e.exe
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_1241e.dir\link.txt --verbose=1
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E rm -f CMakeFiles\cmTC_1241e.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_1241e.dir/objects.a @CMakeFiles\cmTC_1241e.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe --coverage -DCMAKE_HAVE_LIBC_PTHREAD   -static-libgcc -static-libstdc++ -static  -Wl,--whole-archive CMakeFiles\cmTC_1241e.dir/objects.a -Wl,--no-whole-archive  -o cmTC_1241e.exe -Wl,--out-implib,libcmTC_1241e.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_1241e.dir\linklibs.rsp
+CMakeFiles\cmTC_1241e.dir/objects.a(src.c.obj):src.c:(.text+0x59): undefined reference to `pthread_create'
+CMakeFiles\cmTC_1241e.dir/objects.a(src.c.obj):src.c:(.text+0x77): undefined reference to `pthread_detach'
+CMakeFiles\cmTC_1241e.dir/objects.a(src.c.obj):src.c:(.text+0x95): undefined reference to `pthread_cancel'
+CMakeFiles\cmTC_1241e.dir/objects.a(src.c.obj):src.c:(.text+0xb8): undefined reference to `pthread_join'
+CMakeFiles\cmTC_1241e.dir/objects.a(src.c.obj):src.c:(.text+0xd4): undefined reference to `pthread_exit'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_1241e.dir\build.make:108: cmTC_1241e.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Diploma/Code/SBox/cmake-build-debug-coverage/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:140: cmTC_1241e/fast] Error 2
+
+
+Source file was:
+#include <pthread.h>
+
+void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: D:/Diploma/Code/SBox/cmake-build-debug-coverage/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_8b7f0/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_8b7f0.dir\build.make CMakeFiles/cmTC_8b7f0.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Diploma/Code/SBox/cmake-build-debug-coverage/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_8b7f0.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   --coverage -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles\cmTC_8b7f0.dir\CheckFunctionExists.c.obj   -c C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\share\cmake-3.17\Modules\CheckFunctionExists.c
+Linking C executable cmTC_8b7f0.exe
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_8b7f0.dir\link.txt --verbose=1
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E rm -f CMakeFiles\cmTC_8b7f0.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_8b7f0.dir/objects.a @CMakeFiles\cmTC_8b7f0.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe --coverage -DCHECK_FUNCTION_EXISTS=pthread_create   -static-libgcc -static-libstdc++ -static  -Wl,--whole-archive CMakeFiles\cmTC_8b7f0.dir/objects.a -Wl,--no-whole-archive  -o cmTC_8b7f0.exe -Wl,--out-implib,libcmTC_8b7f0.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_8b7f0.dir\linklibs.rsp
+C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -lpthreads
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_8b7f0.dir\build.make:108: cmTC_8b7f0.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Diploma/Code/SBox/cmake-build-debug-coverage/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:140: cmTC_8b7f0/fast] Error 2
+
+
+

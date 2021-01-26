@@ -5,15 +5,49 @@
 #ifndef SBOX_SBOX_H
 #define SBOX_SBOX_H
 
-#include <vector>
 #include "malloc.h"
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <algorithm>
-#include <ctime>
-#include <cmath>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
 #include "chrono"
+#include "pthread.h"
+#include "algorithm"
+#include "vector"
+#include "iostream"
+
+struct pair {
+    int NL;
+    int AC;
+    int count;
+};
+
+struct parameters {
+    int requiredNL;
+    int requiredAC;
+    int MIL;
+    int MUL;
+    double solidification_coefficient;
+    double initial_temperature;
+    int X1;
+    int X2;
+    int R1;
+    int R2;
+    int N;
+    int thread_count;
+    int ready;
+    std::vector<pair> pairs;
+};
+
+struct pthread_simulating_annealing_args {
+    int *sbox;
+    int size;
+    int count;
+    parameters *params;
+    int *result;
+};
+
+int cost_4_16(int *sbox, int size, int count, int X1, int X2, int R1, int R2);
 
 int *SBoxBinaryToDecimal(int *sbox, int size, int count);
 
@@ -23,7 +57,7 @@ int SBoxAC(int *sbox, int size, int count);
 
 int cost_4_11(int *sbox, int size, int count);
 
-int *simulated_annealing(int *sbox, int size, int count, int requiredNL, int requiredAC);
+int *simulated_annealing(int *sbox, int size, int count, parameters *params);
 
 int *read_from_file(const char *file_name, int size);
 
@@ -31,7 +65,7 @@ int *to_binary(char *ANF, int size);
 
 int *int_to_binary(int decimal, int rank);
 
-int SboxNL(int *sbox, int size, int count);
+int SBoxNL(int *sbox, int size, int count);
 
 int pow(int a, int b);
 
@@ -100,5 +134,9 @@ int *generate_function(int size);
 int *generate_sbox(int n, int m);
 
 int N(int *func, int n);
+
+void *pthread_simulating_annealing(void *args);
+
+int LAT(int *sbox, int size, int count);
 
 #endif //SBOX_SBOX_H

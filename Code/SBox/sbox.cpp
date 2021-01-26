@@ -5,7 +5,26 @@
 #include <random>
 #include "sbox.h"
 
+
 int *generate_descendant(int *sbox, int size, int count);
+
+/**
+ * Переводить s-box з бінарного представлення у десяткове
+ * @param sbox - s-box у двійковому предсталенні
+ * @param size - довжина кожної функції
+ * @param count - кількість функцій у блоці
+ * @return s-box довжиною size у десятковому представленні
+ */
+int *SBoxBinaryToDecimal(int *sbox, int size, int count) {
+    int *result = (int *) malloc(sizeof(int) * size);
+    for (int i = 0; i < size; ++i) {
+        *(result + i) = 0;
+        for (int j = 0; j < count; ++j) {
+            *(result + i) += *(sbox + j * size + i) * pow(2, j);
+        }
+    }
+    return result;
+}
 
 /**
  * @param decimalFunc decimal numbers
@@ -312,11 +331,18 @@ int deg(char *anf) {
     return max;
 }
 
+int N(int *func, int n) {
+    int *wh = WHT(func, pow(2, n));
+    int max = abs_max(wh, pow(2, n));
+    free(wh);
+    return pow(2, n - 1) - max / 2;
+}
+
 int NL(int *f, int size) {
-    int *wht = WHT(f, size);
-    int res = (size - abs_max(wht, size)) / 2;
-    free(wht);
-    return res;
+    int *wh = WHT(f, size);
+    int max = abs_max(wh, size);
+    free(wh);
+    return pow(2, log2int(size) - 1) - max / 2;
 }
 
 //Walsh Hadamard Transform
@@ -569,13 +595,6 @@ int gradient_descent(int *func, int size) {
     return 0;
 }
 
-int N(int *func, int n) {
-    int *wh = WHT(func, pow(2, n));
-    int max = abs_max(wh, pow(2, n));
-    free(wh);
-    return (pow(2, n) - max) / 2;
-}
-
 int isBalancedSBox(int *sbox, int size, int count) {
     int result = 0;
     for (int i = 0; i < count; ++i) {
@@ -585,9 +604,9 @@ int isBalancedSBox(int *sbox, int size, int count) {
 }
 
 
-int SboxNL(int *sbox, int size, int count) {
+int SBoxNL(int *sbox, int size, int count) {
     int min = NL(sbox, size);
-    for (int i = 0; i < count; ++i) {
+    for (int i = 1; i < count; ++i) {
         int nl = NL(sbox + size * i, size);
         if (nl < min) {
             min = nl;
@@ -607,64 +626,87 @@ int SBoxAC(int *sbox, int size, int count) {
     return max;
 }
 
-int *simulated_annealing(int *sbox, int size, int count, int requiredNL, int requiredAC) {
-    double d;
-    int MIL = 100;
-    double a = 0.7;
-    double T = 100000;
-    std::mt19937 engine; // mt19937 как один из вариантов
+int *simulated_annealing(int *sbox, int size, int count, parameters *params) {
+    double delta;
+    int SNL = 0;
+    int SAC = 0;
+    int *bestSBox = array_copy(sbox, size * count);
+    int bestNL = pow(2, count - 1) - LAT(bestSBox, size, count);
+    int MUL = params->MUL;
+    int MIL = params->MIL;//количество внутренних циклов
+    double a = params->solidification_coefficient;//коэфициент застывания
+    double T = params->initial_temperature;//начальная температура
+    std::mt19937 engine; // mt19937 - генератор случайных чисел
     int *S = (int *) malloc(size * count * sizeof(int));
+    //записываем изначальный s-box в переменную S
     for (int i = 0; i < size * count; ++i) {
         S[i] = sbox[i];
     }
-    while ((SboxNL(S, size, count) < requiredNL || SBoxAC(S, size, count) > requiredAC)) {
+    //Пока не достигнуты требуемые значания нелинейности и автокареляции
+    while ((SBoxNL(S, size, count) < params->requiredNL || SBoxAC(S, size, count) > params->requiredAC) && MUL > 0) {
+        if (params->ready) {
+            return nullptr;
+        }
+        //Выполняем поиск лучшего потомка указанное количество раз
         for (int i = 0; i < MIL; ++i) {
-            int *Y = generate_descendant(S, size, count);
-            int costY = cost_4_11(Y, size, count);
-            int costS = cost_4_11(sbox, size, count);
-            d = costY - costS;
-            //printf("%d  %d\n", costS, costY);
-            if (d < 0) {
-                //printf("change\n");
+            int *Y = generate_descendant(S, size, count);//генерация потомка
+            int costY = cost_4_16(Y, size, count, params->X1, params->X2, params->R1, params->R2);//стоимость потомка
+            int costS = cost_4_16(S, size, count, params->X1, params->X2, params->R1, params->R2);//текущая стоимость
+            delta = costY - costS;//разница стоимости
+            //если потомок лучше текущего претендента
+            if (delta < 0) {
                 for (int j = 0; j < size * count; ++j) {
                     S[j] = Y[j];
                 }
             } else {
-                double u = (double) engine() / engine.max();
-                //printf("%f\n", u);
-                double t = (double) d / T;
+                //генерируем случайное число 0..1
+                double u = (double) engine() / std::mt19937::max();
+                double t = (double) delta / T;
                 if (u < exp(-t)) {
+                    //с некой вероятностью принимаем худшего потомка
                     for (int j = 0; j < size * count; ++j) {
                         S[j] = Y[j];
                     }
                 }
             }
-            T = T * a;
+            T = T * a;//уменьшаем температуру
             free(Y);
+        }//кінець внутрішнього циклу
+        SNL = pow(2, count - 1) - LAT(S, size, count);
+        SAC = SBoxAC(S, size, count);
+        if (SNL > bestNL) {
+            for (int j = 0; j < size * count; ++j) {
+                bestSBox[j] = S[j];
+            }
+            bestNL = SNL;
         }
-        printf("NL = %d\n", SboxNL(S, size, count));
-        printf("AC = %d\n", SBoxAC(S, size, count));
-    }
-    return S;
+        params->pairs.push_back({SNL, SAC});
+        printf("%5d %5d %9d %9.0f %9.0f\n",
+               SNL,
+               SAC,
+               cost_4_16(S, size, count, params->X1, params->X2, params->R1, params->R2),
+               T,
+               delta);//вивід даних у консоль
+
+        MUL--;
+    }//кінець зовнішннього циклу
+    params->ready = 1;
+    return bestSBox;
 }
 
 int *generate_descendant(int *sbox, int size, int count) {
     int *Y = (int *) malloc(sizeof(int) * size * count);
-    std::mt19937 engine;
-    static int a = 0;
-    int range = engine() % size;
-    range = range >= 0 ? range : range + size;
-    a = (a + 1) % size;
-    int b;
-    do {
-        b = (a + range) % size;
-    } while (b == a);
+    static std::mt19937 engine;
+    int a = engine() % size;
+    int b = (a + a) % size;
     //printf("%d %d\n", a, b);
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < count; ++j) {
             if (i == a) {
                 *(Y + j * size + i) = *(sbox + j * size + b);
-            } else *(Y + j * size + i) = *(sbox + j * size + (i == b ? a : i));
+            } else {
+                *(Y + j * size + i) = *(sbox + j * size + (i == b ? a : i));
+            }
         }
     }
     return Y;
@@ -673,9 +715,11 @@ int *generate_descendant(int *sbox, int size, int count) {
 int *generate_sbox(int n, int m) {
     int size = pow(2, n);
     int *dec = (int *) malloc(sizeof(int) * size);
-    srand(time(NULL));
+    std::random_device rd;
+    std::default_random_engine eng{rd()};
+    std::uniform_int_distribution<> dist(0, size);
     for (int i = 0; i < size;) {
-        dec[i] = rand() % pow(2, m);
+        dec[i] = dist(eng) % pow(2, m);
         int contains = 0;
         for (int j = 0; j < i; ++j) {
             if (dec[i] == dec[j]) {
@@ -687,6 +731,11 @@ int *generate_sbox(int n, int m) {
             i++;
         }
     }
+    /*printf("Generated s-box: ");
+    for (int i = 0; i < size; ++i) {
+        printf("%02X ", dec[i]);
+    }
+    printf("\n");*/
     int *sb = getFunctions(dec, size, m);
     free(dec);
     return sb;
@@ -716,4 +765,73 @@ int cost_4_11(int *sbox, int size, int count) {
         res += re;
     }
     return res;
+}
+
+int cost_4_16(int *sbox, int size, int count, int X1, int X2, int R1, int R2) {
+    /*int X1 = pow(2, count / 2);
+    int R1 = 2;
+    int X2 = X1;//pow(2, log2int(size) / 2);
+    int R2 = 2;*/
+    int res = 0;
+    for (int i = 0; i < count; ++i) {
+        int *r = AC(sbox + i * size, size);
+        int *F = WHT(sbox + i * size, size);
+        for (int j = 0; j < size; ++j) {
+            res += pow(abs(abs(r[i]) - X1), R1);
+            res += pow(abs(abs(F[i]) - X2), R2);
+        }
+    }
+    return res;
+}
+
+
+void *pthread_simulating_annealing(void *args) {
+    auto *args1 = (pthread_simulating_annealing_args *) args;
+    int *res = simulated_annealing(args1->sbox, args1->size, args1->count, args1->params);
+    if (res) {
+        for (int i = 0; i < args1->size * args1->count; ++i) {
+            args1->result[i] = res[i];
+        }
+    }
+
+    //pthread_exit(args1->result);
+    return args1;
+}
+
+int LAT(int *sbox, int size, int count) {
+    int n = log2int(size);
+    int *gf = GF(n);
+    int *table = (int *) malloc(sizeof(int) * (size - 1) * (size - 1));
+    int norm = pow(2, n - 1);
+    int max = 0;
+    for (int i = 0; i < size - 1; ++i) {
+        for (int j = 0; j < size - 1; ++j) {
+            int result = 0;
+            for (int k = 0; k < size; ++k) {
+                int X = 0, Y = 0;
+                for (int l = 0; l < n; ++l) {
+                    X += *(gf + (k * n + l)) * (*(gf + ((j + 1) * n + l)));
+                }
+                for (int l = 0; l < n; ++l) {
+                    Y += *(sbox + (size * l + k)) * (*(gf + ((i + 1) * n + l)));
+                }
+                if (X % 2 == Y % 2) {
+                    result++;
+                }
+            }
+            *(table + i * (size - 1) + j) = result;
+            if (abs(result - norm) > max) {
+                max = abs(result - norm);
+            }
+        }
+    }
+    /*for (int i = 0; i < size - 1; ++i) {
+        for (int j = 0; j < size - 1; ++j) {
+            printf("%d  ", *(table + i * (size - 1) + j));
+        }
+        printf("\n");
+    }*/
+    free(gf);
+    free(table);
+    return max;
 }
