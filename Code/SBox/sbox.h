@@ -119,7 +119,7 @@ int autocorrelation(int *func, int size);
 
 int abs_max(int *arr, int size);
 
-int *getFunctions(int *decimalFunc, int size, int count);
+int *SBoxDecimalToBinary(int *sbox, int size, int count);
 
 int isEqual(int *f1, int *f2, int size);
 

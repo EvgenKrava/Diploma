@@ -27,15 +27,15 @@ int *SBoxBinaryToDecimal(int *sbox, int size, int count) {
 }
 
 /**
- * @param decimalFunc decimal numbers
+ * @param sbox decimal numbers
  * @param size function size
  * @param count
  * @return count functions in binary type
  */
-int *getFunctions(int *decimalFunc, int size, int count) {
+int *SBoxDecimalToBinary(int *sbox, int size, int count) {
     int *result = (int *) malloc(size * count * sizeof(int));
     for (int i = 0; i < size; ++i) {
-        int *bin = int_to_binary(decimalFunc[i], count);
+        int *bin = int_to_binary(sbox[i], count);
         for (int j = 0; j < count; ++j) {
             result[j * size + i] = bin[count - j - 1];
         }
@@ -335,14 +335,14 @@ int N(int *func, int n) {
     int *wh = WHT(func, pow(2, n));
     int max = abs_max(wh, pow(2, n));
     free(wh);
-    return pow(2, n - 1) - max / 2;
+    return pow(2, n) - max / 2;
 }
 
 int NL(int *f, int size) {
     int *wh = WHT(f, size);
     int max = abs_max(wh, size);
     free(wh);
-    return pow(2, log2int(size) - 1) - max / 2;
+    return pow(2, log2int(size)) - max / 2;
 }
 
 //Walsh Hadamard Transform
@@ -606,28 +606,55 @@ int isBalancedSBox(int *sbox, int size, int count) {
 
 int SBoxNL(int *sbox, int size, int count) {
     int min = NL(sbox, size);
-    for (int i = 1; i < count; ++i) {
-        int nl = NL(sbox + size * i, size);
+    for (int i = 1; i < size; ++i) {
+        int *binary_i = int_to_binary(i, count);
+        int com[size];
+        for (int j = 0; j < size; ++j) {
+            com[j] = 0;
+        }
+        for (int j = 0; j < count; ++j) {
+            if (binary_i[j]) {
+                for (int k = 0; k < size; ++k) {
+                    com[k] = (com[k] + *(sbox + j * size + k)) % 2;
+                }
+            }
+        }
+        int nl = NL(com, size);
         if (nl < min) {
             min = nl;
         }
+        free(binary_i);
     }
-    return min;
+    return min - pow(2, count - 1);
 }
 
 int SBoxAC(int *sbox, int size, int count) {
     int max = autocorrelation(sbox, size);
-    for (int i = 1; i < count; ++i) {
-        int ac = autocorrelation(sbox + size * i, size);
+    for (int i = 1; i < size; ++i) {
+        int *binary_i = int_to_binary(i, count);
+        int com[size];
+        for (int j = 0; j < size; ++j) {
+            com[j] = 0;
+        }
+        for (int j = 0; j < count; ++j) {
+            if (binary_i[j]) {
+                for (int k = 0; k < size; ++k) {
+                    com[k] = (com[k] + *(sbox + j * size + k)) % 2;
+                }
+            }
+        }
+        int ac = autocorrelation(com, size);
         if (ac > max) {
             max = ac;
         }
+        free(binary_i);
     }
     return max;
 }
 
 int *simulated_annealing(int *sbox, int size, int count, parameters *params) {
     double delta;
+    int costS, costY;
     int SNL = 0;
     int SAC = 0;
     int *bestSBox = array_copy(sbox, size * count);
@@ -643,15 +670,18 @@ int *simulated_annealing(int *sbox, int size, int count, parameters *params) {
         S[i] = sbox[i];
     }
     //Пока не достигнуты требуемые значания нелинейности и автокареляции
-    while ((SBoxNL(S, size, count) < params->requiredNL || SBoxAC(S, size, count) > params->requiredAC) && MUL > 0) {
+    while ((pow(2, count - 1) - LAT(S, size, count) < params->requiredNL ||
+            SBoxAC(S, size, count) > params->requiredAC) && MUL > 0) {
         if (params->ready) {
             return nullptr;
         }
         //Выполняем поиск лучшего потомка указанное количество раз
         for (int i = 0; i < MIL; ++i) {
             int *Y = generate_descendant(S, size, count);//генерация потомка
-            int costY = cost_4_16(Y, size, count, params->X1, params->X2, params->R1, params->R2);//стоимость потомка
-            int costS = cost_4_16(S, size, count, params->X1, params->X2, params->R1, params->R2);//текущая стоимость
+            costY = cost_4_16(Y, size, count, params->X1, params->X2, params->R1,
+                              params->R2);//стоимость потомка
+            costS = cost_4_16(S, size, count, params->X1, params->X2, params->R1,
+                              params->R2);//текущая стоимость
             delta = costY - costS;//разница стоимости
             //если потомок лучше текущего претендента
             if (delta < 0) {
@@ -672,7 +702,7 @@ int *simulated_annealing(int *sbox, int size, int count, parameters *params) {
             T = T * a;//уменьшаем температуру
             free(Y);
         }//кінець внутрішнього циклу
-        SNL = pow(2, count - 1) - LAT(S, size, count);
+        SNL = SBoxNL(S, size, count);
         SAC = SBoxAC(S, size, count);
         if (SNL > bestNL) {
             for (int j = 0; j < size * count; ++j) {
@@ -684,7 +714,7 @@ int *simulated_annealing(int *sbox, int size, int count, parameters *params) {
         printf("%5d %5d %9d %9.0f %9.0f\n",
                SNL,
                SAC,
-               cost_4_16(S, size, count, params->X1, params->X2, params->R1, params->R2),
+               costS,
                T,
                delta);//вивід даних у консоль
 
@@ -736,7 +766,7 @@ int *generate_sbox(int n, int m) {
         printf("%02X ", dec[i]);
     }
     printf("\n");*/
-    int *sb = getFunctions(dec, size, m);
+    int *sb = SBoxDecimalToBinary(dec, size, m);
     free(dec);
     return sb;
 }
