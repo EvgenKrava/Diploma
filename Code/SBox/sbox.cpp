@@ -652,7 +652,7 @@ int SBoxAC(int *sbox, int size, int count) {
     return max;
 }
 
-int *simulated_annealing(int *sbox, int size, int count, parameters *params) {
+int *simulated_annealing(int *sbox, int size, int count, SAParams *params) {
     double delta;
     int costS, costY;
     int SNL = 0;
@@ -742,7 +742,33 @@ int *generate_descendant(int *sbox, int size, int count) {
     return Y;
 }
 
-int *generate_sbox(int n, int m) {
+int *generate_decimal_sbox(int n, int m) {
+    int size = pow(2, n);
+    int k = pow(2, m);
+    int *dec = (int *) malloc(sizeof(int) * size);
+    for (int i = 0; i < size;) {
+        dec[i] = rand() % k;
+        int contains = 0;
+        for (int j = 0; j < i; ++j) {
+            if (dec[i] == dec[j]) {
+                contains = 1;
+                break;
+            }
+        }
+        if (!contains) {
+            i++;
+        }
+    }
+    /*printf("Generated s-box: ");
+    for (int i = 0; i < size; ++i) {
+        printf("%02X ", dec[i]);
+    }
+    printf("\n");*/
+    return dec;
+}
+
+
+int *generate_binary_sbox(int n, int m) {
     int size = pow(2, n);
     int *dec = (int *) malloc(sizeof(int) * size);
     std::random_device rd;
@@ -773,7 +799,6 @@ int *generate_sbox(int n, int m) {
 
 int *generate_function(int size) {
     int *f = (int *) malloc(sizeof(int) * size);
-    srand(time(nullptr));
     for (int i = 0; i < size; ++i) {
         f[i] = rand() % 2;
     }
@@ -823,7 +848,6 @@ void *pthread_simulating_annealing(void *args) {
             args1->result[i] = res[i];
         }
     }
-
     //pthread_exit(args1->result);
     return args1;
 }
@@ -864,4 +888,147 @@ int LAT(int *sbox, int size, int count) {
     free(gf);
     free(table);
     return max;
+}
+
+
+int *cycle_crossover(const int *d_sbox1, const int *d_sbox2, int n) {
+    int size = pow(2, n);
+    int *child = (int *) malloc(sizeof(int) * size);
+    int spos = rand() % size;
+    int pos = spos;
+    child[spos] = d_sbox1[spos];
+    for (int i = 0; i < size; ++i) {
+        child[i] = -1;
+    }
+    do {
+        for (int i = 0; i < size; ++i) {
+            if (d_sbox1[i] == d_sbox2[pos]) {
+                child[i] = d_sbox1[i];
+                pos = i;
+                break;
+            }
+        }
+    } while (spos != pos);
+    for (int i = 0; i < size; ++i) {
+        if (child[i] == -1) {
+            child[i] = d_sbox2[i];
+        }
+    }
+    return child;
+}
+
+int *PMX_crossover(const int *d_sbox1, const int *d_sbox2, int n) {
+    int size = pow(2, n);
+    int *child = (int *) malloc(sizeof(int) * size);
+    int cp1 = rand() % size / 2;
+    int cp2 = rand() % size / 2 + size / 2;
+    for (int i = 0; i < size; ++i) {
+        child[i] = -1;
+    }
+    for (int i = cp1; i < cp2; ++i) {
+        child[i] = d_sbox1[i];
+    }
+    for (int i = 0; i < cp1; ++i) {
+        int contains = 0;
+        for (int j = cp1; j < cp2; ++j) {
+            if (d_sbox2[i] == child[j]) {
+                contains = 1;
+                break;
+            }
+        }
+        if (!contains) {
+            child[i] = d_sbox2[i];
+        }
+    }
+    for (int i = cp2; i < size; ++i) {
+        int contains = 0;
+        for (int j = 0; j < cp2; ++j) {
+            if (d_sbox2[i] == child[j]) {
+                contains = 1;
+                break;
+            }
+        }
+        if (!contains) {
+            child[i] = d_sbox2[i];
+        }
+    }
+    for (int i = 0; i < size; i++) {
+        if (child[i] == -1) {
+            for (int j = 0; j < size; ++j) {
+                int contains = 0;
+                for (int k = 0; k < size; ++k) {
+                    if (child[k] == d_sbox1[j]) {
+                        contains = 1;
+                        break;
+                    }
+                }
+                if (contains) {
+                    contains = 0;
+                    for (int k = 0; k < size; ++k) {
+                        if (child[k] == d_sbox2[j]) {
+                            contains = 1;
+                            break;
+                        }
+                    }
+                    if (!contains) {
+                        child[i] = d_sbox2[j];
+                        break;
+                    }
+                } else {
+                    child[i] = d_sbox1[j];
+                    break;
+                }
+            }
+        }
+    }
+    return child;
+}
+
+int *GeneticAlgorithm(int n, GAParams *params) {
+    using namespace std;
+    vector<int *> population;
+    int generation = 0;
+    for (int i = 0; i < params->popsize; ++i) {
+        population.push_back(generate_decimal_sbox(n, n));
+    }
+    for (int k = 0; k < params->generationCount; ++k) {
+        sort(population.begin(), population.end(), [n](int *x, int *y) {
+            return
+                    SBoxNL(SBoxDecimalToBinary(x, pow(2, n), n), pow(2, n), n)
+                    >
+                    SBoxNL(SBoxDecimalToBinary(y, pow(2, n), n), pow(2, n), n);
+        });
+
+        cout << "Generation: " << generation << "\t";
+        cout << "NL[0]: "
+             << SBoxNL(SBoxDecimalToBinary(population[0], pow(2, n), n), pow(2, n), n) << "\t";
+        cout << "NL[last]: "
+             << SBoxNL(SBoxDecimalToBinary(population[population.size() - 1], pow(2, n), n), pow(2, n), n) << "\t\n";
+        population.shrink_to_fit();
+        if (population.size() == 1 ||
+            SBoxNL(SBoxDecimalToBinary(population[0], pow(2, n), n), pow(2, n), n) > params->requiredNL) {
+            break;
+        }
+
+        vector<int *> new_population;
+        int s = (int) (params->percentage_of_survivors * params->popsize);
+        for (int i = 0; i < s; i++) {
+            new_population.push_back(population[i]);
+        }
+        for (; new_population.size() < params->popsize - 1;) {
+            int r = rand() % s;
+            int *parent1 = population[r];
+            r = rand() % s;
+            int *parent2 = population[r];
+            int *offspring = PMX_crossover(parent1, parent2, n);
+            new_population.push_back(offspring);
+        }
+        for (int i = s; i < population.size(); ++i) {
+            free(population[i]);
+        }
+        population = new_population;
+        population.shrink_to_fit();
+        generation++;
+    }
+    return population[0];
 }

@@ -7,18 +7,51 @@
 
 void printFunctionParams(int *func, int size);
 
-int read_settings_from_file(const char *file_name, parameters *params);
+int read_settings_from_file(const char *file_name, SAParams *params);
 
-void save_result_to_file(int *sbox, int size, int count, struct parameters params, int time_in_microseconds,
+void save_result_to_file(int *sbox, int size, int count, struct SAParams params, int time_in_microseconds,
                          const char *file_name);
 
-void fill_parameters_default_values(parameters *pParameters);
+void fill_parameters_default_values(SAParams *pParameters);
 
 void save_statistics_in_file(std::vector<pair> element, const char *file_name);
+
+unsigned long mix(unsigned long a, unsigned long b, unsigned long c) {
+    a = a - b;
+    a = a - c;
+    a = a ^ (c >> 13);
+    b = b - c;
+    b = b - a;
+    b = b ^ (a << 8);
+    c = c - a;
+    c = c - b;
+    c = c ^ (b >> 13);
+    a = a - b;
+    a = a - c;
+    a = a ^ (c >> 12);
+    b = b - c;
+    b = b - a;
+    b = b ^ (a << 16);
+    c = c - a;
+    c = c - b;
+    c = c ^ (b >> 5);
+    a = a - b;
+    a = a - c;
+    a = a ^ (c >> 3);
+    b = b - c;
+    b = b - a;
+    b = b ^ (a << 10);
+    c = c - a;
+    c = c - b;
+    c = c ^ (b >> 15);
+    return c;
+}
 
 //GF(2^n)
 int main(int argc, char **argv) {
     setlocale(LC_ALL, "Rus");
+    unsigned long seed = mix(clock(), time(NULL), getpid());
+    srand(seed);
     /*int func_num = 1;
     int n = 3;
     int size = pow(2, n);
@@ -91,63 +124,63 @@ int main(int argc, char **argv) {
         printf("%d ", fu[k]);
     }
     printf("\nNL = %d", NL(fu, size));*/
-    static parameters params;
-    std::string filename = "settings.txt";
-    fill_parameters_default_values(&params);//встановлюємо параметри за замовчуванням
-    //Зчитування параметрів з файлу
-    if (read_settings_from_file(filename.c_str(), &params)) {
-        std::cerr
-                << "Can't open settings.txt file!" << std::endl
-                << "Use default parameters!" << std::endl;
-    } else {
-        std::cout << "Parameters read successfully!" << std::endl;
-    }
-    std::cout << "Генерацiя SBox (кiлькiсть потокiв " << params.thread_count << ")" << std::endl;
-    int n = params.N;
-    int size = pow(2, n);
-    std::cout << "Вхiднi параметри: " << std::endl
-              << "Ожидаемая нелинейность: " << params.requiredNL << std::endl
-              << "Ожидаемая автокорреляция: " << params.requiredAC << std::endl
-              << "Начальная температура: " << params.initial_temperature << std::endl
-              << "Количество внутренних циклов: " << params.MIL << std::endl
-              << "Количество внешних циклов: " << params.MUL << std::endl
-              << "Коэффициент затухания: " << params.solidification_coefficient << std::endl
-              << "X1: " << params.X1 << " X2: " << params.X2 << " R1: " << params.R1 << " R2: " << params.R2
-              << std::endl;
-    int *sbox = generate_sbox(n, n);//генерація випадкового s-box
-    int *result = (int *) malloc(sizeof(int) * size * n);
-    printf("   NL    AC      COST      TEMP     DELTA\n");
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> start;
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> end;
-    pthread_t ptids[params.thread_count];
-    start = std::chrono::high_resolution_clock::now();//Початок вимірювання часу
-    pthread_simulating_annealing_args pthreadSimulatingAnnealingArgs{
-            sbox,
-            size,
-            n,
-            &params,
-            result,
-    };
-    for (int i = 0; i < params.thread_count; ++i) {
-        pthread_create(ptids + i, nullptr, &pthread_simulating_annealing, &pthreadSimulatingAnnealingArgs);
-    }
-    for (int i = 0; i < params.thread_count; ++i) {
-        pthread_join(ptids[i], nullptr);
-    }
-    end = std::chrono::high_resolution_clock::now();//Кінець вимірювання часу
-    result = pthreadSimulatingAnnealingArgs.result;
+     static SAParams params;
+     std::string filename = "settings.txt";
+     fill_parameters_default_values(&params);//встановлюємо параметри за замовчуванням
+     //Зчитування параметрів з файлу
+     if (read_settings_from_file(filename.c_str(), &params)) {
+         std::cerr
+                 << "Can't open settings.txt file!" << std::endl
+                 << "Use default parameters!" << std::endl;
+     } else {
+         std::cout << "Parameters read successfully!" << std::endl;
+     }
+     std::cout << "Генерацiя SBox (кiлькiсть потокiв " << params.thread_count << ")" << std::endl;
+     int n = params.N;
+     int size = pow(2, n);
+     std::cout << "Вхiднi параметри: " << std::endl
+               << "Ожидаемая нелинейность: " << params.requiredNL << std::endl
+               << "Ожидаемая автокорреляция: " << params.requiredAC << std::endl
+               << "Начальная температура: " << params.initial_temperature << std::endl
+               << "Количество внутренних циклов: " << params.MIL << std::endl
+               << "Количество внешних циклов: " << params.MUL << std::endl
+               << "Коэффициент затухания: " << params.solidification_coefficient << std::endl
+               << "X1: " << params.X1 << " X2: " << params.X2 << " R1: " << params.R1 << " R2: " << params.R2
+               << std::endl;
+     int *sbox = generate_binary_sbox(n, n);//генерація випадкового s-box
+     int *result = (int *) malloc(sizeof(int) * size * n);
+     printf("   NL    AC      COST      TEMP     DELTA\n");
+     std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> start;
+     std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> end;
+     pthread_t ptids[params.thread_count];
+     start = std::chrono::high_resolution_clock::now();//Початок вимірювання часу
+     pthread_simulating_annealing_args pthreadSimulatingAnnealingArgs{
+             sbox,
+             size,
+             n,
+             &params,
+             result,
+     };
+     for (int i = 0; i < params.thread_count; ++i) {
+         pthread_create(ptids + i, nullptr, &pthread_simulating_annealing, &pthreadSimulatingAnnealingArgs);
+     }
+     for (int i = 0; i < params.thread_count; ++i) {
+         pthread_join(ptids[i], nullptr);
+     }
+     end = std::chrono::high_resolution_clock::now();//Кінець вимірювання часу
+     result = pthreadSimulatingAnnealingArgs.result;
 
-    int *dec = SBoxBinaryToDecimal(result, size, n);//бінарне представлення у десяткове
-    for (int i = 0; i < size; ++i) {
-        printf("%02X ", dec[i]);
-    }
-    save_result_to_file(result, size, n, params,
-                        std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(),
-                        "result.txt");
-    printf("Результат збережено у файл \"result.txt\" \n Час роботи алгоритму: %d seconds\n",
-           std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000);
-    save_statistics_in_file(params.pairs, "statistics.csv");
-    return 0;
+     int *dec = SBoxBinaryToDecimal(result, size, n);//бінарне представлення у десяткове
+     for (int i = 0; i < size; ++i) {
+         printf("%02X ", dec[i]);
+     }
+     save_result_to_file(result, size, n, params,
+                         std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(),
+                         "result.txt");
+     printf("Результат збережено у файл \"result.txt\" \n Час роботи алгоритму: %d seconds\n",
+            std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000);
+     save_statistics_in_file(params.pairs, "statistics.csv");
+     return 0;
     /*for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < size; ++j) {
             printf("%d ", *(sbox + i * size + j));
@@ -179,7 +212,16 @@ int main(int argc, char **argv) {
     int *sbox = SBoxDecimalToBinary(hex, 256, 8);
     std::cout << pow(2, 7) - LAT(sbox, 256, 8) << std::endl;
     std::cout << SBoxNL(sbox, 256, 8);*/
+
+    /*GAParams params{};
+    params.generationCount = 10;
+    params.popsize = 100;
+    params.requiredNL = 104;
+    params.percentage_of_survivors = 0.7;
+    GeneticAlgorithm(8, &params);*/
+
 }
+
 
 void save_statistics_in_file(std::vector<pair> vector, const char *file_name) {
     FILE *f = fopen(file_name, "w");
@@ -210,7 +252,7 @@ void save_statistics_in_file(std::vector<pair> vector, const char *file_name) {
 }
 
 
-void fill_parameters_default_values(parameters *pParameters) {
+void fill_parameters_default_values(SAParams *pParameters) {
     pParameters->N = 8;
     pParameters->MUL = 100;
     pParameters->R2 = 2;
@@ -229,7 +271,7 @@ void fill_parameters_default_values(parameters *pParameters) {
     pParameters->ready = 0;
 }
 
-void save_result_to_file(int *sbox, int size, int count, struct parameters params, int time_in_microseconds,
+void save_result_to_file(int *sbox, int size, int count, struct SAParams params, int time_in_microseconds,
                          const char *file_name) {
     int *dec = SBoxBinaryToDecimal(sbox, size, count);
     FILE *f = fopen(file_name, "a");
@@ -245,7 +287,7 @@ void save_result_to_file(int *sbox, int size, int count, struct parameters param
     fclose(f);
 }
 
-int read_settings_from_file(const char *file_name, struct parameters *params) {
+int read_settings_from_file(const char *file_name, struct SAParams *params) {
     std::string line;
     std::ifstream in(file_name); // окрываем файл для чтения
     if (in.is_open()) {

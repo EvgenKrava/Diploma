@@ -1,7 +1,6 @@
 //
-// Created by Yevhenii on 10/4/2020.
 //
-
+// Created by Yevhenii on 10/4/2020.
 #ifndef SBOX_SBOX_H
 #define SBOX_SBOX_H
 
@@ -16,13 +15,21 @@
 #include "vector"
 #include "iostream"
 
+
+struct GAParams {
+    int popsize;
+    int requiredNL;
+    double percentage_of_survivors;
+    int generationCount;
+};
+
 struct pair {
     int NL;
     int AC;
     int count;
 };
 
-struct parameters {
+struct SAParams {
     int requiredNL;
     int requiredAC;
     int MIL;
@@ -43,7 +50,7 @@ struct pthread_simulating_annealing_args {
     int *sbox;
     int size;
     int count;
-    parameters *params;
+    SAParams *params;
     int *result;
 };
 
@@ -57,7 +64,7 @@ int SBoxAC(int *sbox, int size, int count);
 
 int cost_4_11(int *sbox, int size, int count);
 
-int *simulated_annealing(int *sbox, int size, int count, parameters *params);
+int *simulated_annealing(int *sbox, int size, int count, SAParams *params);
 
 int *read_from_file(const char *file_name, int size);
 
@@ -131,12 +138,22 @@ int *to_arr(std::vector<int> vector);
 
 int *generate_function(int size);
 
-int *generate_sbox(int n, int m);
+int *generate_binary_sbox(int n, int m);
 
 int N(int *func, int n);
 
 void *pthread_simulating_annealing(void *args);
 
 int LAT(int *sbox, int size, int count);
+
+int *cycle_crossover(const int *d_sbox1, const int *d_sbox2, int n);
+
+int *PMX_crossover(const int *d_sbox1, const int *d_sbox2, int n);
+
+int *GeneticAlgorithm(int n, GAParams *params);
+
+int fitness(int *sbox, int n);
+
+int *generate_decimal_sbox(int n, int m);
 
 #endif //SBOX_SBOX_H
