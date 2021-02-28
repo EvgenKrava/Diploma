@@ -1,0 +1,3 @@
+D:/Diploma/Code/info/cmake-build-debug-coverage/CMakeFiles/rebuild_cache.dir
+D:/Diploma/Code/info/cmake-build-debug-coverage/CMakeFiles/info.dir
+D:/Diploma/Code/info/cmake-build-debug-coverage/CMakeFiles/edit_cache.dir

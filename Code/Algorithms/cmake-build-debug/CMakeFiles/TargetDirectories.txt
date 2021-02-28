@@ -1,0 +1,3 @@
+D:/Diploma/Code/Algorithms/cmake-build-debug/CMakeFiles/Algorithms.dir
+D:/Diploma/Code/Algorithms/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/Diploma/Code/Algorithms/cmake-build-debug/CMakeFiles/rebuild_cache.dir

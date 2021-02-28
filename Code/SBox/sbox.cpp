@@ -107,16 +107,16 @@ int criterion_of_degree(int *func, int size, int k) {
     return 1;
 }
 
-int *reverse(int *f, int func_size) {
-    int *tmp = (int *) malloc(func_size * sizeof(int));
+void reverse(int *f, int func_size) {
+    int *tmp = array_copy(f, func_size);
     for (int i = 0; i < func_size; ++i) {
-        tmp[func_size - i - 1] = f[i];
+        f[func_size - i - 1] = tmp[i];
     }
-    return tmp;
 }
 
 char *to_ANF(int *func, int size) {
-    int *f = reverse(func, size);
+    int *f = array_copy(func, size);
+    reverse(f, size);
     int n = log2int(size);
     int length = 0;
     int *table = GF(n);
@@ -161,6 +161,7 @@ char *to_ANF(int *func, int size) {
     free(coefs);
     free(table);
     free(matrix);
+    free(f);
     return result;
 }
 
@@ -392,7 +393,7 @@ void balance(int *func, int size) {
 int *AC(int *func, int size) {
     int n = log2int(size);
     int *fs = ptt(func, size);
-    fs = reverse(fs, size);
+    reverse(fs, size);
     int *ac = (int *) malloc(size * sizeof(int));
     ac[0] = pow(2, n);
     for (int a = 1; a < size; ++a) {
@@ -413,7 +414,8 @@ int isAffine(int *func, int size) {
 int abs_max(int *arr, int size) {
     int max = 0;
     for (int i = 0; i < size; ++i) {
-        if (abs(arr[i]) > max) max = abs(arr[i]);
+        int tmp = abs(arr[i]);
+        if (tmp > max) max = tmp;
     }
     return max;
 }
@@ -663,7 +665,7 @@ int *simulated_annealing(int *sbox, int size, int count, SAParams *params) {
     int MIL = params->MIL;//количество внутренних циклов
     double a = params->solidification_coefficient;//коэфициент застывания
     double T = params->initial_temperature;//начальная температура
-    std::mt19937 engine; // mt19937 - генератор случайных чисел
+    //std::mt19937 engine; // mt19937 - генератор случайных чисел
     int *S = (int *) malloc(size * count * sizeof(int));
     //записываем изначальный s-box в переменную S
     for (int i = 0; i < size * count; ++i) {
@@ -678,10 +680,8 @@ int *simulated_annealing(int *sbox, int size, int count, SAParams *params) {
         //Выполняем поиск лучшего потомка указанное количество раз
         for (int i = 0; i < MIL; ++i) {
             int *Y = generate_descendant(S, size, count);//генерация потомка
-            costY = cost_4_16(Y, size, count, params->X1, params->X2, params->R1,
-                              params->R2);//стоимость потомка
-            costS = cost_4_16(S, size, count, params->X1, params->X2, params->R1,
-                              params->R2);//текущая стоимость
+            costY = cost_4_16(Y, count, params->costParams);//стоимость потомка
+            costS = cost_4_16(S, count, params->costParams);//текущая стоимость
             delta = costY - costS;//разница стоимости
             //если потомок лучше текущего претендента
             if (delta < 0) {
@@ -690,7 +690,7 @@ int *simulated_annealing(int *sbox, int size, int count, SAParams *params) {
                 }
             } else {
                 //генерируем случайное число 0..1
-                double u = (double) engine() / std::mt19937::max();
+                double u = (double) (rand() + pthread_self()) / RAND_MAX;
                 double t = (double) delta / T;
                 if (u < exp(-t)) {
                     //с некой вероятностью принимаем худшего потомка
@@ -699,9 +699,9 @@ int *simulated_annealing(int *sbox, int size, int count, SAParams *params) {
                     }
                 }
             }
-            T = T * a;//уменьшаем температуру
             free(Y);
         }//кінець внутрішнього циклу
+        T = T * a;//уменьшаем температуру
         SNL = SBoxNL(S, size, count);
         SAC = SBoxAC(S, size, count);
         if (SNL > bestNL) {
@@ -726,9 +726,8 @@ int *simulated_annealing(int *sbox, int size, int count, SAParams *params) {
 
 int *generate_descendant(int *sbox, int size, int count) {
     int *Y = (int *) malloc(sizeof(int) * size * count);
-    static std::mt19937 engine;
-    int a = engine() % size;
-    int b = (a + a) % size;
+    int a = (rand() + pthread_self()) % size;
+    int b = (rand() + pthread_self()) % size;
     //printf("%d %d\n", a, b);
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < count; ++j) {
@@ -747,7 +746,7 @@ int *generate_decimal_sbox(int n, int m) {
     int k = pow(2, m);
     int *dec = (int *) malloc(sizeof(int) * size);
     for (int i = 0; i < size;) {
-        dec[i] = rand() % k;
+        dec[i] = (rand() + pthread_self()) % k;
         int contains = 0;
         for (int j = 0; j < i; ++j) {
             if (dec[i] == dec[j]) {
@@ -822,19 +821,22 @@ int cost_4_11(int *sbox, int size, int count) {
     return res;
 }
 
-int cost_4_16(int *sbox, int size, int count, int X1, int X2, int R1, int R2) {
+int cost_4_16(int *sbox, int n, CostParams costParams) {
     /*int X1 = pow(2, count / 2);
     int R1 = 2;
     int X2 = X1;//pow(2, log2int(size) / 2);
     int R2 = 2;*/
+    int size = pow(2, n);
     int res = 0;
-    for (int i = 0; i < count; ++i) {
-        int *r = AC(sbox + i * size, size);
+    for (int i = 0; i < n; ++i) {
         int *F = WHT(sbox + i * size, size);
+        int *r = AC(sbox + i * size, size);
         for (int j = 0; j < size; ++j) {
-            res += pow(abs(abs(r[i]) - X1), R1);
-            res += pow(abs(abs(F[i]) - X2), R2);
+            res += pow(abs(abs(F[j]) - costParams.X1), costParams.R1);
+            res += pow(abs(abs(r[j]) - costParams.X2), costParams.R2);
         }
+        free(r);
+        free(F);
     }
     return res;
 }
@@ -991,37 +993,51 @@ int *GeneticAlgorithm(int n, GAParams *params) {
     for (int i = 0; i < params->popsize; ++i) {
         population.push_back(generate_decimal_sbox(n, n));
     }
+    /*for (int i = 0; i < params->popsize; ++i) {
+        for (int j = 0; j < pow(2, n); ++j) {
+            printf("%02X ", population[i][j]);
+        }
+        cout << endl;
+    }*/
     for (int k = 0; k < params->generationCount; ++k) {
-        sort(population.begin(), population.end(), [n](int *x, int *y) {
-            return
-                    SBoxNL(SBoxDecimalToBinary(x, pow(2, n), n), pow(2, n), n)
-                    >
-                    SBoxNL(SBoxDecimalToBinary(y, pow(2, n), n), pow(2, n), n);
+        sort(population.begin(), population.end(), [params, n](int *x, int *y) {
+
+            int *bx = SBoxDecimalToBinary(x, pow(2, n), n);
+            int *by = SBoxDecimalToBinary(y, pow(2, n), n);
+
+            int delta = cost_4_16(bx, n, params->costParams) -
+                        cost_4_16(by, n, params->costParams);
+            free(bx);
+            free(by);
+            return delta < 0;
         });
 
         cout << "Generation: " << generation << "\t";
-        cout << "NL[0]: "
-             << SBoxNL(SBoxDecimalToBinary(population[0], pow(2, n), n), pow(2, n), n) << "\t";
-        cout << "NL[last]: "
-             << SBoxNL(SBoxDecimalToBinary(population[population.size() - 1], pow(2, n), n), pow(2, n), n) << "\t\n";
+        int bestNL = SBoxNL(SBoxDecimalToBinary(population[0], pow(2, n), n), pow(2, n), n);
+        cout << "Best NL: " << bestNL << endl;
         population.shrink_to_fit();
-        if (population.size() == 1 ||
-            SBoxNL(SBoxDecimalToBinary(population[0], pow(2, n), n), pow(2, n), n) > params->requiredNL) {
+        if (bestNL >= params->requiredNL) {
             break;
         }
-
         vector<int *> new_population;
-        int s = (int) (params->percentage_of_survivors * params->popsize);
+        int s = (int) ((1 - params->x) * params->popsize);
         for (int i = 0; i < s; i++) {
             new_population.push_back(population[i]);
         }
-        for (; new_population.size() < params->popsize - 1;) {
+        for (; new_population.size() < params->popsize;) {
             int r = rand() % s;
             int *parent1 = population[r];
             r = rand() % s;
             int *parent2 = population[r];
-            int *offspring = PMX_crossover(parent1, parent2, n);
+            int *offspring = cycle_crossover(parent1, parent2, n);
             new_population.push_back(offspring);
+        }
+        for (int i = 0; i < params->m * params->popsize; ++i) {
+            int r = rand() % params->popsize;
+            int *mutant = SBoxDecimalToBinary(new_population[r], pow(2, n), n);
+            free(new_population[r]);
+            new_population[r] = generate_descendant(mutant, pow(2, n), n);
+            free(mutant);
         }
         for (int i = s; i < population.size(); ++i) {
             free(population[i]);
@@ -1030,5 +1046,58 @@ int *GeneticAlgorithm(int n, GAParams *params) {
         population.shrink_to_fit();
         generation++;
     }
-    return population[0];
+    sort(population.begin(), population.end(), [n](int *x, int *y) {
+        int *bx = SBoxDecimalToBinary(x, pow(2, n), n);
+        int *by = SBoxDecimalToBinary(y, pow(2, n), n);
+        int delta = SBoxNL(bx, pow(2, n), n) - SBoxNL(by, pow(2, n), n);
+        free(bx);
+        free(by);
+        return delta > 0;
+    });
+    int *res = population[0];
+    for (int i = 1; i < population.size(); ++i) {
+        free(population[i]);
+    }
+    return res;
+}
+
+int *GATree(int *sbox_d, int n, GATParams *params) {
+//    КРОК 0: Визначаємо параметри методу,
+//    особливо ціле число N - розмірність S-коробки NxN,
+//            де N = 8, ціле число M - кількість S-коробок у фермі,
+//    ціле число C - кількість наступників для S-коробки кожної ферми,
+//    ціле число I - максимальна кількість ітерацій у генетичній
+//    частині алгоритму, ціле число NT - значення нелінійності
+//    щоб перейти до деревної частини алгоритму, ціле число Z - максимум
+//    кількість загально шуканих S-коробок, ціле число NEL
+//    - бажане значення нелінійності. Визначаємо функцію витрат
+//    CF. Якщо NEL менше або дорівнює NT, то деревна частина
+//    алгоритм використовувати не буде.
+
+//    КРОК 1: Встановіть нуль на кількість ітерацій. Встановіть для MxC кількість загально шуканих S-коробок. Випадково генерують MxC
+//    S-коробки. Цей набір називається сукупністю. Для всіх S-коробок
+//    серед населення, підрахуйте функцію витрат CF та нелінійність. Встановити в якості поточного найкращу нелінійність з
+//    сукупності до цілого числа CN. Якщо будь-який S-box із сукупності має нелінійність більшу або рівну NEL, то GoTo
+//    КРОК 9, або якщо будь-який S-box із сукупності має нелінійність, більшу або рівну NT, перейдіть до КРОКУ 4. Інакше
+//    замовити S-коробки за функцією витрат CF та найкращим M
+//    з них стають фермами. Потім перейдіть до КРОКУ 2.
+
+
+    for (int i = 0; i < 0; ++i) {
+        int *arr;
+    }
+
+    int width = 5;
+    int height = 3;
+
+    int *arr = (int *) malloc(sizeof(int) * width);
+    for (int i = 0; i < width; ++i) {
+
+    }
+    *(arr + 0 * height + 0) = 1;
+    for (int i = 0; i < height; ++i) {
+
+    }
+
+    return nullptr;
 }

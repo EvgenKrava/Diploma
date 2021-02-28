@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="Algorithms" targetName="Algorithms" />
+    </generated>
+  </component>
+  <component name="CMakeSettings" AUTO_RELOAD="true">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" ENABLED="true" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="006b96eb-5fe6-46d7-ae85-f54fbfa53ee1" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/Algorithms.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/Algorithms.cbp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/Algorithms.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.17.3/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.17.3/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/CXX.includecache" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/DependInfo.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/build.make" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/cmake_clean.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/cost.cpp.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/depend.internal" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/depend.make" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/flags.make" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/link.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/linklibs.rsp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/main.cpp.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/objects.a" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/objects1.rsp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/progress.make" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/props.cpp.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Algorithms.dir/simulating_annealing.cpp.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeError.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/cmake.check_cache" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cost.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cost.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/file.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/genetratin_params.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/props.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/props.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simulating_annealing.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simulating_annealing.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/.idea/.name" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/config.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/cost.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/cost.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/genetratin_params.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/props.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/props.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/simulating_annealing.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../info/simulating_annealing.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/cmake-build-debug/CMakeFiles/SBox.dir/main.cpp.obj" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/cmake-build-debug/CMakeFiles/SBox.dir/main.cpp.obj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/cmake-build-debug/CMakeFiles/SBox.dir/objects.a" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/cmake-build-debug/CMakeFiles/SBox.dir/objects.a" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/cmake-build-debug/CMakeFiles/SBox.dir/sbox.cpp.obj" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/cmake-build-debug/CMakeFiles/SBox.dir/sbox.cpp.obj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/cmake-build-debug/SBox.exe" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/cmake-build-debug/SBox.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/sbox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/sbox.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SBox/sbox.h" beforeDir="false" afterPath="$PROJECT_DIR$/../SBox/sbox.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../info/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../info/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../info/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/3.17.3/CMakeCCompiler.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/3.17.3/CMakeSystem.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/3.17.3/CompilerIdC/CMakeCCompilerId.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/3.17.3/CompilerIdC/a.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/CMakeOutput.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/clion-environment.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/info.dir/CXX.includecache" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/info.dir/depend.internal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/info.dir/main.cpp.obj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/CMakeFiles/info.dir/objects.a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/file.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/cmake-build-debug/info.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/file.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../info/file.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/info.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../info/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../info/main.cpp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectId" id="1p6xx5u9RQnXj1SbjNt0wYCtcIc" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Diploma\Code\Algorithms" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Algorithms" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Algorithms" TARGET_NAME="Algorithms" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Algorithms" RUN_TARGET_NAME="Algorithms">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="006b96eb-5fe6-46d7-ae85-f54fbfa53ee1" name="Default Changelist" comment="" />
+      <created>1614517585126</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1614517585126</updated>
+      <workItem from="1614517586741" duration="200000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

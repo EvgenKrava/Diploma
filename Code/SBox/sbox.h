@@ -15,12 +15,11 @@
 #include "vector"
 #include "iostream"
 
-
-struct GAParams {
-    int popsize;
-    int requiredNL;
-    double percentage_of_survivors;
-    int generationCount;
+struct CostParams {
+    int X1;
+    int X2;
+    int R1;
+    int R2;
 };
 
 struct pair {
@@ -36,14 +35,29 @@ struct SAParams {
     int MUL;
     double solidification_coefficient;
     double initial_temperature;
-    int X1;
-    int X2;
-    int R1;
-    int R2;
+    CostParams costParams;
     int N;
     int thread_count;
     int ready;
     std::vector<pair> pairs;
+};
+
+struct GAParams {
+    int popsize;//the number of individuals in the population
+    int requiredNL;
+    int generationCount;
+    double x;  //fraction of the population to be replaced by crossover in each iteration
+    double m; //the mutation rate.
+    int requiredAC;
+    CostParams costParams;
+    int thread_count;
+};
+
+struct GATParams {
+    int C;
+    int I;
+    int Z;
+    CostParams params;
 };
 
 struct pthread_simulating_annealing_args {
@@ -54,7 +68,7 @@ struct pthread_simulating_annealing_args {
     int *result;
 };
 
-int cost_4_16(int *sbox, int size, int count, int X1, int X2, int R1, int R2);
+int cost_4_16(int *sbox, int n, CostParams costParams);
 
 int *SBoxBinaryToDecimal(int *sbox, int size, int count);
 
@@ -110,7 +124,7 @@ int vector_criterion(int *func, int size, int k);
 
 int *GF(int n);
 
-int *reverse(int *f, int func_size);
+void reverse(int *f, int func_size);
 
 int deg(char *anf);
 
@@ -155,5 +169,7 @@ int *GeneticAlgorithm(int n, GAParams *params);
 int fitness(int *sbox, int n);
 
 int *generate_decimal_sbox(int n, int m);
+
+int *GATree(int *sbox_d, int n, GATParams *params);
 
 #endif //SBOX_SBOX_H

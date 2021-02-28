@@ -1,0 +1,64 @@
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: D:/Diploma/Code/SBox/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_ee291/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_ee291.dir\build.make CMakeFiles/cmTC_ee291.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Diploma/Code/SBox/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ee291.dir/src.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles\cmTC_ee291.dir\src.c.obj   -c D:\Diploma\Code\SBox\cmake-build-debug\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_ee291.exe
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_ee291.dir\link.txt --verbose=1
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E rm -f CMakeFiles\cmTC_ee291.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_ee291.dir/objects.a @CMakeFiles\cmTC_ee291.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCMAKE_HAVE_LIBC_PTHREAD   -static-libgcc -static-libstdc++ -static  -Wl,--whole-archive CMakeFiles\cmTC_ee291.dir/objects.a -Wl,--no-whole-archive  -o cmTC_ee291.exe -Wl,--out-implib,libcmTC_ee291.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_ee291.dir\linklibs.rsp
+CMakeFiles\cmTC_ee291.dir/objects.a(src.c.obj):src.c:(.text+0x35): undefined reference to `pthread_create'
+CMakeFiles\cmTC_ee291.dir/objects.a(src.c.obj):src.c:(.text+0x41): undefined reference to `pthread_detach'
+CMakeFiles\cmTC_ee291.dir/objects.a(src.c.obj):src.c:(.text+0x4d): undefined reference to `pthread_cancel'
+CMakeFiles\cmTC_ee291.dir/objects.a(src.c.obj):src.c:(.text+0x5e): undefined reference to `pthread_join'
+CMakeFiles\cmTC_ee291.dir/objects.a(src.c.obj):src.c:(.text+0x68): undefined reference to `pthread_exit'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_ee291.dir\build.make:108: cmTC_ee291.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Diploma/Code/SBox/cmake-build-debug/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:140: cmTC_ee291/fast] Error 2
+
+
+Source file was:
+#include <pthread.h>
+
+void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: D:/Diploma/Code/SBox/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_3ab04/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_3ab04.dir\build.make CMakeFiles/cmTC_3ab04.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Diploma/Code/SBox/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3ab04.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles\cmTC_3ab04.dir\CheckFunctionExists.c.obj   -c C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\share\cmake-3.17\Modules\CheckFunctionExists.c
+Linking C executable cmTC_3ab04.exe
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_3ab04.dir\link.txt --verbose=1
+C:\Users\Yevhenii\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\203.5981.166\bin\cmake\win\bin\cmake.exe -E rm -f CMakeFiles\cmTC_3ab04.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_3ab04.dir/objects.a @CMakeFiles\cmTC_3ab04.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=pthread_create   -static-libgcc -static-libstdc++ -static  -Wl,--whole-archive CMakeFiles\cmTC_3ab04.dir/objects.a -Wl,--no-whole-archive  -o cmTC_3ab04.exe -Wl,--out-implib,libcmTC_3ab04.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_3ab04.dir\linklibs.rsp
+C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -lpthreads
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_3ab04.dir\build.make:108: cmTC_3ab04.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Diploma/Code/SBox/cmake-build-debug/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:140: cmTC_3ab04/fast] Error 2
+
+
+

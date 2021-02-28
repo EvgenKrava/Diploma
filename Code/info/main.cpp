@@ -2,23 +2,20 @@
 #include <cmath>
 #include <bitset>
 #include <conio.h>
+#include <ctime>
 #include "fstream"
-#include "stdlib.h"
-
-int *int_to_binary(int decimal, int rank);
-
-int *SBoxDecimalToBinary(int *sbox, int n);
-
-int LAT(int *sbox, int n);
-
-int SBoxNL(int *sbox, int n);
+#include <cstdlib>
+#include "props.h"
+#include "simulating_annealing.h"
 
 int read(const char *file_name, int *sbox, int n);
 
-int *GF(int n);
+unsigned long mix(unsigned long clock, unsigned long time, unsigned long pid);
 
 int main(int argc, char **argv) {
     setlocale(LC_ALL, "Rus");
+    unsigned long seed = mix(clock(), time(nullptr), getpid());
+    srand(seed);
     using namespace std;
     int n = 8;
     int size = (int) pow(2, n);
@@ -27,59 +24,23 @@ int main(int argc, char **argv) {
     for (int i = 0; i < size; ++i) {
         printf("%02X ", sbox[i]);
     }
-    cout << endl << "Нелинейность: " << SBoxNL(SBoxDecimalToBinary(sbox, n), n);
+    cout << endl << "LAT: " << LAT(SBoxDecimalToBinary(sbox, n), n);
+    cout << endl << "Нелинейность: " << NL(SBoxDecimalToBinary(sbox, n), n);
+    cout << endl << "Д Равномерность: " << delta_uniformity(sbox, n);
+    cout << endl << "min_degree: " << min_degree(sbox, n);
+    getch();
+
     return 0;
 }
 
 int SBoxNL(int *sbox, int n) {
-    return pow(2, n - 1) - LAT(sbox, n);
+    return (int) pow(2, n - 1) - LAT(sbox, n);
 }
 
-int LAT(int *sbox, int n) {
-    int size = pow(2, n);
-    int *gf = GF(n);
-    int *table = (int *) malloc(sizeof(int) * (size - 1) * (size - 1));
-    int norm = pow(2, n - 1);
-    int max = 0;
-    for (int i = 0; i < size - 1; ++i) {
-        for (int j = 0; j < size - 1; ++j) {
-            int result = 0;
-            for (int k = 0; k < size; ++k) {
-                int X = 0, Y = 0;
-                for (int l = 0; l < n; ++l) {
-                    X += *(gf + (k * n + l)) * (*(gf + ((j + 1) * n + l)));
-                }
-                for (int l = 0; l < n; ++l) {
-                    Y += *(sbox + (size * l + k)) * (*(gf + ((i + 1) * n + l)));
-                }
-                if (X % 2 == Y % 2) {
-                    result++;
-                }
-            }
-            *(table + i * (size - 1) + j) = result;
-            if (abs(result - norm) > max) {
-                max = abs(result - norm);
-            }
-        }
-    }
-    free(gf);
-    free(table);
-    return max;
-}
-
-int *GF(int n) {
-    int *arr = (int *) malloc(n * pow(2, n) * sizeof(int));
-    for (int i = 0; i < pow(2, n); ++i) {
-        for (int j = n - 1; j >= 0; --j) {
-            *(arr + i * n + j) = (i >> (n - j - 1)) & 1u;
-        }
-    }
-    return arr;
-}
 
 int read(const char *file_name, int *sbox, int n) {
     using namespace std;
-    int size = pow(2, n);
+    int size = (int) pow(2, n);
     string line;
     ifstream in(file_name);
     if (in.is_open()) {
@@ -94,23 +55,33 @@ int read(const char *file_name, int *sbox, int n) {
     return 0;
 }
 
-int *SBoxDecimalToBinary(int *sbox, int n) {
-    int size = (int) pow(2, n);
-    int *result = (int *) malloc(size * n * sizeof(int));
-    for (int i = 0; i < size; ++i) {
-        int *bin = int_to_binary(sbox[i], n);
-        for (int j = 0; j < n; ++j) {
-            result[j * size + i] = bin[n - j - 1];
-        }
-        free(bin);
-    }
-    return result;
-}
-
-int *int_to_binary(int decimal, int rank) {
-    int *res = (int *) malloc(sizeof(int) * rank);
-    for (int j = 0; j < rank; ++j) {
-        res[rank - 1 - j] = decimal >> j & 1u;
-    }
-    return res;
+unsigned long mix(unsigned long clock, unsigned long time, unsigned long pid) {
+    clock = clock - time;
+    clock = clock - pid;
+    clock = clock ^ (pid >> 13);
+    time = time - pid;
+    time = time - clock;
+    time = time ^ (clock << 8);
+    pid = pid - clock;
+    pid = pid - time;
+    pid = pid ^ (time >> 13);
+    clock = clock - time;
+    clock = clock - pid;
+    clock = clock ^ (pid >> 12);
+    time = time - pid;
+    time = time - clock;
+    time = time ^ (clock << 16);
+    pid = pid - clock;
+    pid = pid - time;
+    pid = pid ^ (time >> 5);
+    clock = clock - time;
+    clock = clock - pid;
+    clock = clock ^ (pid >> 3);
+    time = time - pid;
+    time = time - clock;
+    time = time ^ (clock << 10);
+    pid = pid - clock;
+    pid = pid - time;
+    pid = pid ^ (time >> 15);
+    return pid;
 }

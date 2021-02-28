@@ -6,6 +6,12 @@
 
 #IncludeRegexTransform: 
 
+D:/Diploma/Code/info/cost.h
+
+D:/Diploma/Code/info/genetratin_params.h
+cost.h
+D:/Diploma/Code/info/cost.h
+
 D:/Diploma/Code/info/main.cpp
 iostream
 -
@@ -15,8 +21,30 @@ bitset
 -
 conio.h
 -
+ctime
+-
 fstream
 D:/Diploma/Code/info/fstream
-stdlib.h
-D:/Diploma/Code/info/stdlib.h
+cstdlib
+-
+props.h
+D:/Diploma/Code/info/props.h
+simulating_annealing.h
+D:/Diploma/Code/info/simulating_annealing.h
+
+D:/Diploma/Code/info/props.h
+cstdio
+-
+
+D:/Diploma/Code/info/simulating_annealing.h
+cmath
+-
+cstdio
+-
+genetratin_params.h
+D:/Diploma/Code/info/genetratin_params.h
+props.h
+D:/Diploma/Code/info/props.h
+pthread.h
+D:/Diploma/Code/info/pthread.h
 
